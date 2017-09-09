@@ -31,11 +31,26 @@ namespace AgentSystem
 
         //List of neighbour agents. I really need these as agents not as Vector positions.
         public List<Vector3d> neighbours = new List<Vector3d>(); //change to agents
-
         public List<Agent> neighbourAgents = new List<Agent>();
-        //
 
-        //Constructor
+
+
+        //behaviour settings
+        public Double agentAlignStrength = 0;
+        public Double agentAttractStrength = 0;
+        public Double agentRepelStrength = 0;
+        public  Double agentAlignRadius = 0;
+        public  Double agentAttractRadius = 0;
+        public Double agentRepelRadius = 0;
+
+        //bounds settings
+        public  Double boundaryRepelStrength = 0;
+        public Double boundaryRepelRadius = 50;
+        
+
+
+
+        //Constructor 1
 
         public Agent(double _x, double _y, double _z, double _searchRadius)
         {
@@ -51,6 +66,52 @@ namespace AgentSystem
             boundingContainer = new List<Plane>();
 
         }
+
+
+        //constructor 2 with behaviours added
+        /* 
+        Double agentAlignStrength = 0;
+            Double agentAttractStrength = 0;
+            Double agentRepelStrength = 0;
+
+            Double agentAlignRadius = 0;
+            Double agentAttractRadius = 0;
+            Double agentRepelRadius = 0;
+    */
+        public Agent(double _x, double _y, double _z, double _searchRadius, double _agentAlignStrength, double _agentAttractStrength, double _agentRepelStrength, double _agentAlignRadius, double _agentAttractRadius, double _agentRepelRadius, double _boundaryRepelStrength, double _boundaryRepelRadius, double _agentSpeed, double _agentAccell)
+        {
+            x = _x;
+            y = _y;
+            z = _z;
+
+            position.X = x;
+            position.Y = y;
+            position.Z = z;
+            searchRadius = (float)_searchRadius;
+            //clear list on spawning
+            boundingContainer = new List<Plane>();
+
+
+            //behaviours
+            agentAlignStrength = _agentAlignStrength;
+            agentAttractStrength = _agentAttractStrength;
+             agentRepelStrength = _agentRepelStrength;
+            agentAlignRadius = _agentAlignRadius;
+            agentAttractRadius = _agentAttractRadius;
+            agentRepelRadius = _agentRepelRadius;
+
+            //bounding container 
+            boundaryRepelStrength = _boundaryRepelStrength;
+            boundaryRepelRadius = _boundaryRepelRadius;
+
+            //double _agentSpeed, double _agentAccell
+            spd = _agentSpeed;
+            accLimit = _agentAccell;
+        }
+
+
+
+
         //
 
         //Functions to be called when running
@@ -58,7 +119,7 @@ namespace AgentSystem
         public void run(Environment environment)
         {
 
-            checkContainer(environment, 100, 5);
+            checkContainer(environment, boundaryRepelRadius, boundaryRepelStrength);
             //checkBounds(environment, 0.002);
 
             if (environment.pop.Count() > 0)
@@ -71,9 +132,11 @@ namespace AgentSystem
 
                 getNeighbourAgents(this.position, searchRadius, environment);
 
-                align(200, 20.9);
-                cohesion(150, 0.3);
-                seperation(10, 2);
+               
+
+                align(agentAlignRadius, agentAlignStrength);
+                cohesion(agentAttractRadius, agentAttractStrength);
+                seperation(agentRepelRadius, agentRepelStrength);
             }
 
 
