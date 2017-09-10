@@ -77,6 +77,8 @@ namespace AgentSystem
             pManager.AddVectorParameter("Agents Neighbours Positions", "Selected Agent neighbours pos", "Vector3d withneighbouring agents positions", GH_ParamAccess.list);
             pManager.AddVectorParameter("Agents Neighbours velocity vectors", "Selected Agent neighbours vel", "Vector3d withneighbouring agents velocity vector", GH_ParamAccess.list);
 
+            pManager.AddLineParameter("Agents vectors", "Selected line vel", "vector as line", GH_ParamAccess.list);
+
         }
 
         //--------------------------------------------------------------------------------------------------------------------
@@ -85,7 +87,7 @@ namespace AgentSystem
 
         //Global Variables
         public Boolean initialise = true;
-        public Environment environment = new Environment(500, new List<Plane>());
+        public Environment environment = new Environment(2000, new List<Plane>());
 
         //render Lists
         public List<Point3d> renderPtList = new List<Point3d>();
@@ -97,6 +99,7 @@ namespace AgentSystem
         public Vector3d singleAgentPosToRender = new Vector3d();
         public Vector3d singleAgentVelToRender = new Vector3d();
 
+        public List<Line> agentForceLineList = new List<Line>();
 
         //Load in spawnPts for Agents
         public List<Point3d> spawnPtList = new List<Point3d>();
@@ -118,6 +121,7 @@ namespace AgentSystem
         {
             renderPtList.Clear();
             agentVelList.Clear();
+            agentForceLineList.Clear();
             if (environment.pop.Count() > 0)
             {
 
@@ -127,6 +131,8 @@ namespace AgentSystem
                     renderPtList.Add(pt);
                     Vector3d agentVel = a.vel;
                     agentVelList.Add(agentVel);
+
+                    agentForceLineList.Add(a.lineOfForce);
                 }
             }
         }
@@ -160,8 +166,8 @@ namespace AgentSystem
                 //Rhino.RhinoApp.WriteLine(selectedAgent.neighbourAgents.Count().ToString());
 
 
-                if (selectedAgent.neighbourAgents.Count() > 0) {
-                neighbouringAgents = selectedAgent.neighbourAgents;
+                if (selectedAgent.neighbours.Count() > 0) {
+                neighbouringAgents = selectedAgent.neighbours;
 
                 //fill the relevant lists. For each agent in the neighouring list, get its position vec and velocity vec and add to lists
                 foreach (var a in neighbouringAgents) {
@@ -230,7 +236,7 @@ namespace AgentSystem
  if (!DA.GetDataList(2, BoundingPlaneList)) { return; }
 
 
-            Rhino.RhinoApp.WriteLine(agentSearchRadius.ToString());
+            
 
             //Agent behaviour imput data
 
@@ -325,9 +331,9 @@ namespace AgentSystem
             DA.SetDataList(4, renderPosListOfNeighboursToAgent);
             DA.SetDataList(5, renderVelListOfNeighboursToAgent);
 
+            DA.SetDataList(6, agentForceLineList);
 
-            
-           
+
         }
 
         /// <summary>

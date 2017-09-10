@@ -18,7 +18,10 @@ namespace AgentSystem
 
 
         //octree
-        public PointOctree pts;
+       // public PointOctree pts;
+        //agent octree
+        public AgentOctree pts;
+
         public double bounds;
         public AABB boundary;
 
@@ -34,7 +37,7 @@ namespace AgentSystem
             removeAgents = new List<Agent>();
             addAgents = new List<Agent>();
             bounds = _bounds;
-            pts = new PointOctree(null, new Vector3d(-bounds, -bounds, -bounds), bounds * 2);
+            pts = new AgentOctree(null, new Vector3d(-bounds, -bounds, -bounds), bounds * 2);
             container = _container;
 
             //note - we might not use this once planes implemented
@@ -88,10 +91,10 @@ namespace AgentSystem
             if (pop.Count() > 0)
             {
 
-                pts = new PointOctree(null, new Vector3d(-bounds, -bounds, -bounds), bounds * 2);
+                pts = new AgentOctree(null, new Vector3d(-bounds, -bounds, -bounds), bounds * 2);
                 foreach (var a in pop)
                 {
-                    pts.addPoint(a.position);
+                    pts.addPoint(a);
                 }
             }
 
@@ -163,7 +166,7 @@ namespace AgentSystem
 
         //octree function
 
-        public List<Vector3d> getWithinSphere(Vector3d p, float radius)
+        public List<Agent> getWithinSphere(Agent p, float radius)
         {
 
             return pts.getPointsWithinSphere(p, radius);
@@ -171,6 +174,8 @@ namespace AgentSystem
         //
         //octree function
 
+
+            /*
         public List<Agent> getAgentsWithinSphere(Vector3d p, float radius)
         {
 
@@ -199,7 +204,7 @@ namespace AgentSystem
 
             return agentList;
         }
-
+        */
 
     
 

@@ -30,8 +30,8 @@ namespace AgentSystem
         public List<Plane> boundingContainer = new List<Plane>();
 
         //List of neighbour agents. I really need these as agents not as Vector positions.
-        public List<Vector3d> neighbours = new List<Vector3d>(); //change to agents
-        public List<Agent> neighbourAgents = new List<Agent>();
+        public List<Agent> neighbours = new List<Agent>(); //change to agents
+       // public List<Agent> neighbourAgents = new List<Agent>();
 
 
 
@@ -46,8 +46,10 @@ namespace AgentSystem
         //bounds settings
         public  Double boundaryRepelStrength = 0;
         public Double boundaryRepelRadius = 50;
-        
 
+        //testing
+
+        public Line lineOfForce;
 
 
         //Constructor 1
@@ -128,11 +130,11 @@ namespace AgentSystem
                 //cant seem to get agents that are actually close...
                 //its taking a radius from a wierd spot. not the agents location. could be origin but not quite.
                 //  getNeighbours(this.position, searchRadius, environment);
+                getNeighbours(searchRadius, environment);
+
+                // getNeighbourAgents(searchRadius, environment);
 
 
-                getNeighbourAgents(this.position, searchRadius, environment);
-
-               
 
                 align(agentAlignRadius, agentAlignStrength);
                 cohesion(agentAttractRadius, agentAttractStrength);
@@ -244,29 +246,45 @@ namespace AgentSystem
         }
         // so agents can find each others positions using oct tree
 
-        public void getNeighbours(Vector3d imputPosition, float radius, Environment environment)
+        public void getNeighbours(float radius, Environment environment)
         {
 
             //clear list of current neighbours
-            neighbours.Clear();
-            List<Vector3d> addList = new List<Vector3d>();
+            //
 
+            //CHECK NEIGHBOURS STILL RELEVANT
+            if (neighbours.Count() > 0) {
+                Vector3d toneighbour = neighbours.ElementAt(0).position - this.position;
+                double dist = toneighbour.Length;
+
+               
+
+                if (dist > radius) {
+
+                    neighbours.Clear();
+                    
+                }
+
+                    }
+            
+
+            if (neighbours.Count() == 0) { 
+
+            List<Agent> addList = new List<Agent>();
 
             //this function in environment
-            addList = environment.getWithinSphere(imputPosition, radius);
-            //list of position vectors. The problem is, how do i know which position corresponds
-            //to which agent? maybe it doesnt need to know this? try with vectors. it will only
-            // know there is a vector "position" there, but assume its an agent.
+            addList = environment.getWithinSphere(this, radius);
+            
 
             if (addList != null)
             {
                 neighbours.AddRange(addList);
 
             }
-
+            }
         }
 
-
+        /*
         public void getNeighbourAgents(Vector3d imputPosition, float radius, Environment environment)
         {
 
@@ -286,13 +304,9 @@ namespace AgentSystem
                 neighbourAgents.AddRange(addList);
 
 
-
             }
-
-
-
         }
-
+        */
 
         //Interpolation Behaviors
 
@@ -311,12 +325,12 @@ namespace AgentSystem
             //for each neighbour in neighbours. if neighbour != this agent,
             //if distance to agent < specified distance,
 
-            if (neighbourAgents.Count() > 0)
+            if (neighbours.Count() > 0)
             {
 
 
 
-                foreach (var neighbouringAgent in neighbourAgents)
+                foreach (var neighbouringAgent in neighbours)
                 {
 
                     if (neighbouringAgent != this)
@@ -378,41 +392,69 @@ namespace AgentSystem
             Vector3d computationVector = new Vector3d(0, 0, 0);
 
 
-            if (neighbourAgents.Count() > 0)
+            if (neighbours.Count() > 0)
             {
 
 
-                foreach (var neighbouringAgent in neighbourAgents)
+                foreach (var neighbouringAgent in neighbours)
                 {
-                    if (neighbouringAgent != this)
-                    {
+                   // if (neighbouringAgent != this)
+                    //{
 
+
+                        
 
                         Vector3d resultingVector = neighbouringAgent.position - this.position;
                         double distToNeighbour = resultingVector.Length;
-                        if (distToNeighbour <= cohesionRadius)
+
+                 
+
+
+                    if (distToNeighbour <= cohesionRadius && distToNeighbour > 1)
                         {
 
-                            //=i want its position
-                            computationVector += neighbouringAgent.position;
+                        
+                        //  computationVector += neighbouringAgent.position;
+                        //=i want its position
+                        computationVector = (computationVector + neighbouringAgent.position);
                             neighbourCount++;
 
 
-                        }
+                       // }
                     }
 
 
                 }
-
+                
                 computationVector /= neighbourCount;
-                computationVector.Unitize();
+                //the target should be this computation vector.
 
+                //create a vector between this agents position and the comptuation vector.
+
+              Vector3d  desireVector = new Vector3d();
+
+                desireVector = computationVector - position;
+
+
+                //for viewing purposes
+                Vector3d preview = position + (vel*10);
+                Line a = new Line(new Point3d(position.X, position.Y, position.Z), new Point3d(preview.X, preview.Y, preview.Z));
+                lineOfForce = a;
+
+                desireVector.Unitize();
+
+                desireVector = desireVector * strength;
+
+               
+
+
+                addForce(desireVector);
+
+                //moved all inside if neighbour.count > 0 brackets. 
 
 
             }
-
-            addForce(computationVector * strength);
-
+ 
         }
 
 
@@ -431,12 +473,12 @@ namespace AgentSystem
             //for each neighbour in neighbours. if neighbour != this agent,
             //if distance to agent < specified distance,
 
-            if (neighbourAgents.Count() > 0)
+            if (neighbours.Count() > 0)
             {
 
 
 
-                foreach (var neighbouringAgent in neighbourAgents)
+                foreach (var neighbouringAgent in neighbours)
                 {
 
                     if (neighbouringAgent != this)
@@ -457,6 +499,8 @@ namespace AgentSystem
 
 
                             //i dont want its position, i want its velocity
+                            // computationVector += neighbouringAgent.vel;
+
                             computationVector += neighbouringAgent.vel;
 
                             // Rhino.RhinoApp.WriteLine(AlignRadius.ToString());
